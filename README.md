@@ -1,7 +1,7 @@
 # Reading and analyzing ALAZAR data
 
 ## Prequisites
-ROOT, numpy
+ROOT, numpy, pyyaml, doccopt
 
 ## Example
 
