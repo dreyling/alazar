@@ -11,39 +11,23 @@ Options:
 
 import yaml
 from docopt import docopt
-import numpy as np
 import sys
+import alazar
 
 import matplotlib.pyplot as plt
-#import matplotlib.gridspec as gridspec
-#from scipy.optimize import curve_fit
 
-from ROOT import TFile
-
-############################################
 # arguments
 arguments = docopt(__doc__, version='read and analyze Alazar root files')
 configuration = yaml.load(open(arguments['--configuration']))
-#print configuration['root_file']
 
-############################################
 # getting data
-data = TFile(configuration['root_file']).Get('Data of channel ChA') 
-#print data
+data = alazar.root2np(configuration['root_tfile'], configuration['root_tgraph']) 
 
-# From Root array to numpy array
-# see https://gist.github.com/jepio/4802f87164f20e266503
-x_data = np.array(data.GetX(), copy=True)
-y_data = np.array(data.GetY(), copy=True)
-#print x_data, y_data
-#print len(x_data), len(y_data)
-
-############################################
 # plotting
 fig, ax = plt.subplots(figsize=(5, 3))#, dpi=100)
 fig.subplots_adjust(left=0.20, right=0.97, top=0.97, bottom=0.20)
 
-ax.plot(x_data, y_data)
+ax.plot(data[0], data[1])
 
 ax.set_xlabel('time [s]')
 ax.set_ylabel('signal [V]')

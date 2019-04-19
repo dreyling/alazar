@@ -1,51 +1,40 @@
 """ Module alazar
 A module for reading and processing alazar data"""
 
-import yaml
-from docopt import docopt
 import numpy as np
-import sys
-
-import matplotlib.pyplot as plt
-#import matplotlib.gridspec as gridspec
-#from scipy.optimize import curve_fit
-
 from ROOT import TFile
 
-
-
-############################################
-# arguments
-arguments = docopt(__doc__, version='read and analyze Alazar root files')
-configuration = yaml.load(open(arguments['--configuration']))
-#print configuration['root_file']
-
-############################################
 # getting data
-
-def root2npz(root_file, root_tgraph_name):
+def root2np(tfile, tgraph):
     """ Converts ROOT data to numpy"""
-    data = TFile(configuration[root_file]).Get(root_tgraph_name) 
+    data = TFile(tfile).Get(tgraph) 
     # From Root array to numpy array
     # see https://gist.github.com/jepio/4802f87164f20e266503
     x_data = np.array(data.GetX(), copy=True)
     y_data = np.array(data.GetY(), copy=True)
-#print x_data, y_data
-#print len(x_data), len(y_data)
+    data = np.vstack((x_data, y_data))
+    return data
 
-############################################
-# plotting
-fig, ax = plt.subplots(figsize=(5, 3))#, dpi=100)
-fig.subplots_adjust(left=0.20, right=0.97, top=0.97, bottom=0.20)
 
-ax.plot(x_data, y_data)
+# fft data
+def fft_timeline(x_data, y_data, samples=1):
+    binning = abs(x_data[0]-x_data[1])
+    total_entries = x_data.size
+    samples = samples
+    sample_entries = total_entries / samples
+    print "total entries", total_entries, "with binning [s]", binning, "and duration [s]", binning * sample_entries
+    print "samples:", samples, "with duration [s]", binning * sample_entries
 
-ax.set_xlabel('time [s]')
-ax.set_ylabel('signal [V]')
+    # create arrays
+    frequency = np.fft.fftfreq(sample_entries, binning) 
+    # make it real and zero!
+    voltage = np.abs(np.fft.fft(y_data[0:sample_entries])) * 0.0
 
-# save 
-title_save = sys.argv[0][:-3]
-name_save =  "output/" + title_save + str(".pdf") 
-fig.savefig(name_save)
-print "evince " + name_save + "&"
-
+    # sampling and averaging
+    for index in range(samples):
+        voltage_data = y_data[index*sample_entries:(index+1)*sample_entries]
+        # TODO: normalization?! --> integral
+        voltage = voltage + np.abs(np.fft.fft(voltage_data)) / sample_entries
+        #print "no", index
+    voltage = voltage / samples
+    return frequency[frequency>=0], voltage[frequency>=0]

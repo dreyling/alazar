@@ -1,7 +1,6 @@
 # Settings
 
-root_file: "data/CryoSig_cold_noAlu_noOsci_1.root"
+root_tfile: "data/CryoSig_cold_noAlu_noOsci_1.root"
+root_tgraph: "Data of channel ChA"
 
-histogram_collection: "gblsumkxandsumky"
-profile_collection: "gblsumkxandsumky_xyP"
-profile_collection_check: "gblsumkx2andsumky2_xyP"
+fft_samples: 10000
